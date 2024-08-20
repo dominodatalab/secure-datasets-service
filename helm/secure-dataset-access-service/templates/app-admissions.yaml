@@ -1,0 +1,16 @@
+apiVersion: apps.dominodatalab.com/v1alpha1
+kind: Validation
+metadata:
+  name: "{{ .Values.env.name }}-admission-app"
+  namespace: domino-platform
+rules:
+- jqSelector:
+      query: |
+        include "domsed/selectors/common";
+        $__kind__ == "Pod" and
+        (.metadata.labels."dominodatalab.com/workload-type" | isIn(["App"])) and
+        (.metadata.labels."dominodatalab.com/starting-user-username" 
+        | isIn(["myapp-sa", "secure-ds-access-sa", "svc-user-ds-1", "svc-user-ds-2", "svc-user-ds-3",
+                "svc-test-app-1", "svc-prod-app-1", "svc-admin"]) | not)
+  queryValidation:
+    message: "Apps can only be started by service accounts"

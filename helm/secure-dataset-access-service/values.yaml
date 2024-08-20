@@ -1,0 +1,20 @@
+image:
+  repository: quay.io/domino
+  container: secure-ds-service
+  appVersion: v0.0.1
+  pullPolicy: Always
+env:
+  name: secure-datasets
+  service: secure-datasets-svc
+  namespace:
+    compute: domino-compute
+  admin_project_id: 662a70a548ce7c5c14d8d3ce
+  admin_user: integration-test
+istio:
+  enabled: false
+certmanager:
+  duration: 8760h
+  renewBefore: 360h
+
+
+

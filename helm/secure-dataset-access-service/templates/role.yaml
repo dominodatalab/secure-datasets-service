@@ -1,0 +1,14 @@
+kind: Role
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: "{{ .Values.env.name }}"
+  namespace: "{{ .Values.env.namespace.compute }}"
+rules:
+- apiGroups:
+  - ""
+  resources:
+  - "secret"
+  verbs:
+  - "get"
+  resourceNames:
+  - "{{ .Values.env.name }}"

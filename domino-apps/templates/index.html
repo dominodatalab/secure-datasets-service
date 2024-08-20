@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>App Demo for Secure Datasets</title>
+    <style>
+        table {
+            border-collapse: collapse;
+            width: 100%;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+    </style>
+</head>
+<body>
+    <h1>Datasets with entitlements. Calling User <b>{{ title }}</b></h1>
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Grants</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in data %}
+            <tr>
+                <td>{{ item.id }}</td>
+                <td>{{ item.name }}</td>
+                <td>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>User Name</th>
+                                <th>Role</th>
+                                <th>Is Org</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for grant in item.grants %}
+                            <tr>
+                                <td>{{ grant.user_name }}</td>
+                                <td>{{ grant.role }}</td>
+                                <td>{{ grant.is_org }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <h1>Listing datasets. Calling User <b>{{ title }}</b></h1>
+    <h2>Endpoint : https://secure-datasets-svc.domino-compute.svc.cluster.local/dataset/list/[DATASET_ID]?path=[path]</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Dataset Name</th>
+                <th>Status Code</th>
+                <th>Status Message</th>
+                <th>Path</th>                
+                <th>Contents</th> 
+            </tr>
+            
+        </thead>
+        <tbody>
+            {% for item in listing %}
+            
+            <tr>
+                <td>{{ item.dataset_name }}</td>
+                <td>{{ item.status_code}}</td>
+                <td>{{ item.status }}</td>
+                <td>{{ item.path }}</td>
+                 <td>
+                     
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Type</th>                                
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for c in item.contents %}
+                            <tr>
+                                <td>{{ c.name }}</td>
+                                <td>{{ c.type }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </td>               
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>      
+
+    
+    <h1>Access the object /a/b/c/ds.txt for four datasets. Calling User <b>{{ title }}</b></h1>
+    <h2>Endpoint : https://secure-datasets-svc.domino-compute.svc.cluster.local/dataset/fetch/[DATASET_ID]?path=a/b/c/ds.txt</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Dataset Name</th>
+                <th>Status Code</th>
+                <th>Status Message</th>
+                <th>Object Found</th>                
+                <th>Contents</th> 
+                <th>Source Path</th>
+                <th>Local Path In App</th>                        
+                <th>Expires On (Local File Available Until)</th>
+            </tr>
+            
+        </thead>
+        <tbody>
+            {% for item in results %}
+            <tr>
+                <td>{{ item.dataset_name }}</td>
+                <td>{{ item.status_code }}</td>
+                <td>{{ item.status }}</td>
+                <td>{{ item.success_file_found }}</td>
+                <td>{{ item.contents }}</td>                
+                <td>{{ item.source_path }}</td>                
+                <td>{{ item.local_path }}</td>                
+                <td>{{ item.expires_on }}</td>                
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table> 
+   
+</body>
+</html>

@@ -1,0 +1,101 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: "{{ .Values.env.name }}"
+  labels:
+    app: "{{ .Values.env.name }}"
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: "{{ .Values.env.name}}"
+  template:
+    metadata:
+      labels:
+        app: "{{ .Values.env.name }}"
+        nucleus-client: "true"
+        mongodb-replicaset-client: "true"
+    spec:
+      nodeSelector:
+        dominodatalab.com/node-pool: platform
+      serviceAccountName: "{{ .Values.env.name }}"
+      automountServiceAccountToken: true  
+      containers:
+      - name: "{{ .Values.env.name }}-cleanup"
+        securityContext:
+          runAsUser: 1000
+          runAsGroup: 1000
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+              - all
+        image: "{{ .Values.image.repository }}/{{ .Values.image.container }}:{{ .Values.image.appVersion }}"
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
+        env:
+        - name: IS_CLEANUP_CONTAINER
+          value: "true"
+        volumeMounts:
+          - mountPath: /secure/datasets/
+            subPath: secure/datasets
+            name: domino-shared-store-domino-compute-vol
+      - name: "{{ .Values.env.name }}"
+        securityContext:
+          runAsUser: 1000
+          runAsGroup: 1000
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+              - all
+        image: "{{ .Values.image.repository }}/{{ .Values.image.container }}:{{ .Values.image.appVersion }}"
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
+        ports:
+        - containerPort: 5000
+        livenessProbe:
+          httpGet:
+            path: /healthz
+            port: 6000
+            scheme: HTTPS
+          initialDelaySeconds: 20
+          failureThreshold: 2
+          timeoutSeconds: 5
+        readinessProbe:
+          httpGet:
+            path: /healthz
+            port: 6000
+            scheme: HTTPS
+          initialDelaySeconds: 20
+          failureThreshold: 2
+          timeoutSeconds: 5
+        env:
+        - name: IS_CLEANUP_CONTAINER
+          value: "false"
+        volumeMounts:
+          - name: certs
+            mountPath: /ssl
+            readOnly: true
+          - name: domino-shared-store-domino-compute-vol
+            mountPath: /secure/datasets/data
+            subPath: secure/datasets/data
+          - name: domino-shared-store-domino-compute-vol
+            mountPath: /secure/datasets/metadata
+            subPath: secure/datasets/metadata
+          - name: sa-to-env-mapping
+            mountPath: /etc/config/
+            readOnly: true
+          - mountPath: /domino/datasets/filecache
+            subPath: filecache
+            name: domino-shared-store-domino-compute-vol
+            readOnly: true
+          - mountPath: /a
+            name: domino-shared-store-domino-compute-vol
+            readOnly: true
+      volumes:
+        - name: certs
+          secret:
+            secretName: "{{ .Values.env.name }}-certs"
+        - name: domino-shared-store-domino-compute-vol
+          persistentVolumeClaim:
+            claimName: domino-shared-store-domino-compute
+        - name: sa-to-env-mapping
+          secret:
+            secretName: "{{ .Values.env.name }}"

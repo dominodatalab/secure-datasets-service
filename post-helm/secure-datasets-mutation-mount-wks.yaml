@@ -1,0 +1,24 @@
+apiVersion: apps.dominodatalab.com/v1alpha1
+kind: Mutation
+metadata:
+  name: "secure-datasets-mutation-mount-wks"
+  namespace: domino-platform
+rules:
+- jqSelector:
+      query: |
+        include "domsed/selectors/common";
+        $__kind__ == "Pod" and
+        (.metadata.labels."dominodatalab.com/workload-type" | isIn(["Workspace"]))
+  insertVolumeMounts:
+    containerSelector:
+      - run
+    volumeMounts:
+      - name: domino-shared-store-domino-compute-vol
+        mountPath: "/dev/secure/datasets/data/{{ object['metadata']['labels']['dominodatalab.com/starting-user-username'] }}"
+        subPath: "{{ object['metadata']['labels']['dominodatalab.com/starting-user-username'] }}"
+        readOnly: true
+      - name: domino-shared-store-domino-compute-vol
+        mountPath: "/dev/secure/datasets/metadata/{{ object['metadata']['labels']['dominodatalab.com/starting-user-username'] }}"
+        subPath: "{{ object['metadata']['labels']['dominodatalab.com/starting-user-username'] }}"
+        readOnly: true
+

@@ -1,0 +1,12 @@
+apiVersion: v1
+name: secure-dataset-access-service
+version: 1.0.0
+description: secure-dataset-access-service
+home: https://github.com/domino-field/secure-dataset-access-service
+keywords:
+- secure
+- datasets
+maintainers:
+- email: sameer.wadkar@dominodatalab.com
+  name: Sameer Wadkar
+

@@ -1,0 +1,31 @@
+apiVersion: apps.dominodatalab.com/v1alpha1
+kind: Mutation
+metadata:
+  name: "{{ .Values.env.name }}-mutation-app"
+  namespace: domino-platform
+rules:
+- jqSelector:
+      query: |
+        include "domsed/selectors/common";
+        $__kind__ == "Pod" and
+        (.metadata.labels."dominodatalab.com/workload-type" | isIn(["App"]))
+  insertVolumeMounts:
+    containerSelector:
+      - run
+    volumeMounts:
+      - name: "{{ .Values.env.name }}-certs"
+        mountPath: /secure-datasets-ssl
+        readOnly: true
+      - name: domino-shared-store-domino-compute-vol
+        mountPath: "{{ printf "/secure/datasets/data/{{ object['metadata']['labels']['dominodatalab.com/starting-user-username'] }}" }}"
+        subPath: "{{ printf  "secure/datasets/data/{{ object['metadata']['labels']['dominodatalab.com/starting-user-username'] }}" }}"
+        readOnly: true
+      - name: domino-shared-store-domino-compute-vol
+        mountPath: "{{ printf "/secure/datasets/metadata/{{ object['metadata']['labels']['dominodatalab.com/starting-user-username'] }}" }}"
+        subPath: "{{ printf "secure/datasets/metadata/{{ object['metadata']['labels']['dominodatalab.com/starting-user-username'] }}" }}"
+        readOnly: true
+  insertVolumes:
+    - name: "{{ .Values.env.name }}-certs"
+      secret:
+        secretName: "{{ .Values.env.name }}-certs"
+
